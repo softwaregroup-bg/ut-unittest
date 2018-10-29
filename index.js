@@ -1,14 +1,21 @@
 const { define, get, fetch } = require('./errorApi')();
+const errorApi = {
+    defineError: define,
+    getError: get,
+    fetchErrors: fetch
+};
 
-module.exports = ({busConfig, errors, config, mainLib}) => {
+/**
+ * @param {Object} param
+ * @param {Object} param.busConfig - mocked external methods
+ * @param {Function} param.errors - error initialization function
+ * @param {Object} param.mainLib - methods to be tested
+ * @param {Function} param.config - instance config, initialized errors will be passed as argument
+ */
+module.exports = ({busConfig, errors, mainLib, config}) => {
     const busConfigGlobal = busConfig;
-    const configGlobal = config;
-    const errorsGlobal = errors;
-    const errorApi = {
-        defineError: define,
-        getError: get,
-        fetchErrors: fetch
-    };
+    const errorsGlobal = errors && errors(errorApi);
+    const configGlobal = config && config({errors: errorsGlobal});
 
     const init = ({busConfig, config, errors}) => Object.assign(
         {[`_id_${Math.random()}`]: 'id'},
@@ -16,11 +23,11 @@ module.exports = ({busConfig, errors, config, mainLib}) => {
         {config},
         {
             errors: {
-                ...errors(errorApi),
+                ...errors,
                 ...errorApi
             },
             bus: {
-                importMethod: (method) => (msg) => Promise.resolve(busConfig[method](msg)),
+                importMethod: (method) => (msg) => Promise.resolve((busConfig[method] || (() => ('Method not found')))(msg)),
                 config: ((busConfig && busConfig.config) || {})
             },
             log: {error: () => {}, log: () => {}}
@@ -28,12 +35,15 @@ module.exports = ({busConfig, errors, config, mainLib}) => {
     );
     return {
         init: ({busConfig, errors, config} = {}) => {
-            var inst = init({
+            let initParams = {
                 busConfig: ((busConfig && Object.assign({}, busConfigGlobal, {config: busConfig})) || busConfigGlobal),
-                config: ((config && Object.assign({}, configGlobal, config)) || configGlobal),
-                errors: ((errors && Object.assign({}, errorsGlobal, errors)) || errorsGlobal)
-            });
-            inst.start();
+                errors: ((errors && Object.assign({}, errorsGlobal, errors(errorApi))) || errorsGlobal)
+            };
+            initParams.config = ((config && Object.assign({}, configGlobal, config({errors: initParams.errors}))) || configGlobal);
+
+            let inst = init(initParams);
+            inst.start && inst.start();
+
             return inst;
         }
     };
