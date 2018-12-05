@@ -14,7 +14,7 @@ const errorApi = {
  */
 module.exports = ({busConfig, errors, mainLib, config}) => {
     const busConfigGlobal = busConfig;
-    const errorsGlobal = errors && errors(errorApi);
+    const errorsGlobal = errors && errors({utError: errorApi});
     const configGlobal = config && config({errors: errorsGlobal});
 
     const init = ({busConfig, config, errors}) => Object.assign(
