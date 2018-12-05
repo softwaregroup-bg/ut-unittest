@@ -1,3 +1,12 @@
+# [1.1.0](https://github.com/softwaregroup-bg/ut-unittest/compare/v1.0.3...v1.1.0) (2018-12-05)
+
+
+### Features
+
+* export partial microservices ([525c8aa](https://github.com/softwaregroup-bg/ut-unittest/commit/525c8aa))
+
+
+
 <a name="1.0.3"></a>
 ## [1.0.3](https://github.com/softwaregroup-bg/ut-unittest/compare/v1.0.2...v1.0.3) (2018-10-29)
 
